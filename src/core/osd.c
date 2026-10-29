@@ -260,6 +260,48 @@ void osd_clock_show(bool bShow) {
     osd_clock_time_show(bShow);
 }
 
+// ---- Pilot name plate --------------------------------------------------------
+// Shows /resource/OSD/GOGGLE/pilot_name.bmp (FHD/pilot_name.bmp for 1080p) from
+// the SD card at its native size. Gray 127,127,127 is transparent, as with the
+// other goggle OSD icons. The element is hidden when the file is absent.
+#define PILOT_NAME_IMG "pilot_name.bmp"
+
+static bool pilot_name_loaded[2] = {false, false};
+static uint32_t pilot_name_retry = 0;
+
+static bool osd_pilot_name_load(uint8_t fhd) {
+    char path[128];
+
+    snprintf(path, sizeof(path), "%s%s%s", RESOURCE_PATH_SDCARD, fhd ? "FHD/" : "", PILOT_NAME_IMG);
+    if (fhd && access(path, F_OK) != 0) // 1080p falls back to the 720p picture
+        snprintf(path, sizeof(path), "%s%s", RESOURCE_PATH_SDCARD, PILOT_NAME_IMG);
+    if (access(path, F_OK) != 0)
+        return false;
+
+    char src[132];
+    snprintf(src, sizeof(src), "A:%s", path);
+    lv_img_set_src(g_osd_hdzero.pilot_name[fhd], src);
+    lv_obj_set_size(g_osd_hdzero.pilot_name[fhd], LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    pilot_name_loaded[fhd] = true;
+    LOGI("pilot name loaded: %s", path);
+    return true;
+}
+
+void osd_pilot_name_show(bool bShow) {
+    lv_obj_t *obj = g_osd_hdzero.pilot_name[is_fhd];
+    if (!obj)
+        return;
+
+    // the SD card may be mounted after start-up: retry now and then
+    if (!pilot_name_loaded[is_fhd] && (pilot_name_retry++ % 400) == 0)
+        osd_pilot_name_load(is_fhd);
+
+    if (bShow && pilot_name_loaded[is_fhd] && g_setting.osd.element[OSD_GOGGLE_PILOT_NAME].show)
+        lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    else
+        lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+}
+
 void osd_topfan_show(bool bShow) {
     char buf[128];
     if (!bShow || !g_setting.osd.element[OSD_GOGGLE_TOPFAN_SPEED].show) {
@@ -624,6 +666,8 @@ void osd_show_all_elements() {
     else
         lv_obj_add_flag(g_osd_hdzero.ant3[is_fhd], LV_OBJ_FLAG_HIDDEN);
 
+    osd_pilot_name_show(true);
+
     if (!g_setting.storage.selftest)
         return;
 
@@ -720,6 +764,7 @@ void osd_hdzero_update(void) {
     osd_rec_show(g_setting.osd.is_visible);
     osd_llock_show(g_setting.osd.is_visible);
     osd_topfan_show(g_setting.osd.is_visible);
+    osd_pilot_name_show(g_setting.osd.is_visible);
     osd_battery_voltage_show(g_setting.osd.is_visible);
     osd_clock_show(g_setting.osd.is_visible);
 
@@ -884,6 +929,11 @@ static void embedded_osd_init(uint8_t fhd) {
     osd_object_create_img(fhd, &g_osd_hdzero.ant2[fhd], buf, &g_setting.osd.element[OSD_GOGGLE_ANT2].position, so);
     osd_object_create_img(fhd, &g_osd_hdzero.ant3[fhd], buf, &g_setting.osd.element[OSD_GOGGLE_ANT3].position, so);
 
+    g_osd_hdzero.pilot_name[fhd] = lv_img_create(so);
+    osd_object_set_pos(fhd, g_osd_hdzero.pilot_name[fhd], &g_setting.osd.element[OSD_GOGGLE_PILOT_NAME].position);
+    lv_obj_add_flag(g_osd_hdzero.pilot_name[fhd], LV_OBJ_FLAG_HIDDEN);
+    osd_pilot_name_load(fhd);
+
     if (g_setting.storage.selftest) {
         osd_object_create_label(fhd, &g_osd_hdzero.osd_tempe[fhd][0], "TOP:-.- oC", &g_setting.osd.element[OSD_GOGGLE_TEMP_TOP].position, so);
 #if defined(HDZGOGGLE) || defined(HDZGOGGLE2)
@@ -917,6 +967,8 @@ void osd_update_element_positions() {
     osd_object_set_pos(is_fhd, g_osd_hdzero.ant1[is_fhd], &g_setting.osd.element[OSD_GOGGLE_ANT1].position);
     osd_object_set_pos(is_fhd, g_osd_hdzero.ant2[is_fhd], &g_setting.osd.element[OSD_GOGGLE_ANT2].position);
     osd_object_set_pos(is_fhd, g_osd_hdzero.ant3[is_fhd], &g_setting.osd.element[OSD_GOGGLE_ANT3].position);
+    if (g_osd_hdzero.pilot_name[is_fhd])
+        osd_object_set_pos(is_fhd, g_osd_hdzero.pilot_name[is_fhd], &g_setting.osd.element[OSD_GOGGLE_PILOT_NAME].position);
 
 #if defined(HDZBOXPRO) || defined(HDZGOGGLE2)
     osd_analog_rssi_update_location();

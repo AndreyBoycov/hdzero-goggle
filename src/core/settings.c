@@ -170,6 +170,11 @@ const setting_t g_setting_defaults = {
                 .show = true,
                 .position = {.mode_4_3 = {.x = 1000, .y = 0}, .mode_16_9 = {.x = 1160, .y = 0}},
             },
+            // OSD_GOGGLE_PILOT_NAME
+            {
+                .show = true,
+                .position = {.mode_4_3 = {.x = 190, .y = 590}, .mode_16_9 = {.x = 40, .y = 590}},
+            },
             // OSD_GOGGLE_TEMP_TOP
             {
                 .show = true,
@@ -411,6 +416,7 @@ void settings_load(void) {
     settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_ANT1], "ant1", &g_setting_defaults.osd.element[OSD_GOGGLE_ANT1]);
     settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_ANT2], "ant2", &g_setting_defaults.osd.element[OSD_GOGGLE_ANT2]);
     settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_ANT3], "ant3", &g_setting_defaults.osd.element[OSD_GOGGLE_ANT3]);
+    settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_PILOT_NAME], "pilot_name", &g_setting_defaults.osd.element[OSD_GOGGLE_PILOT_NAME]);
     settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_TEMP_TOP], "goggle_temp_top", &g_setting_defaults.osd.element[OSD_GOGGLE_TEMP_TOP]);
     settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_TEMP_LEFT], "goggle_temp_left", &g_setting_defaults.osd.element[OSD_GOGGLE_TEMP_LEFT]);
     settings_load_osd_element(&g_setting.osd.element[OSD_GOGGLE_TEMP_RIGHT], "goggle_temp_right", &g_setting_defaults.osd.element[OSD_GOGGLE_TEMP_RIGHT]);

@@ -48,6 +48,7 @@ typedef struct {
     lv_obj_t *ant1[2];
     lv_obj_t *ant2[2];
     lv_obj_t *ant3[2];
+    lv_obj_t *pilot_name[2];
     lv_obj_t *osd_tempe[2][3]; // top,left,bot
     lv_obj_t *clock[2][OSD_CLOCK_TOTAL];
 } osd_hdzero_t;
