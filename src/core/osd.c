@@ -764,7 +764,9 @@ void osd_hdzero_update(void) {
     osd_rec_show(g_setting.osd.is_visible);
     osd_llock_show(g_setting.osd.is_visible);
     osd_topfan_show(g_setting.osd.is_visible);
-    osd_pilot_name_show(g_setting.osd.is_visible);
+    // pilot name plate: analog video only (module or AV input)
+    osd_pilot_name_show(g_setting.osd.is_visible &&
+                        (g_source_info.source == SOURCE_AV_MODULE || g_source_info.source == SOURCE_AV_IN));
     osd_battery_voltage_show(g_setting.osd.is_visible);
     osd_clock_show(g_setting.osd.is_visible);
 
